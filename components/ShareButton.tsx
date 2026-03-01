@@ -17,11 +17,14 @@ export default function ShareButton({ resultData, cardRef }: ShareButtonProps) {
     if (!cardRef.current) return null;
 
     try {
+      // Wait for fonts to fully load before capturing
+      await document.fonts.ready;
       const domtoimage = await import("dom-to-image-more");
       const dataUrl = await domtoimage.toPng(cardRef.current, {
         width: 1080,
         height: 1920,
         cacheBust: true,
+        bgcolor: "#0D0D0F",
       });
       const response = await fetch(dataUrl);
       return await response.blob();

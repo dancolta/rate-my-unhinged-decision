@@ -8,12 +8,15 @@ interface ResultCardProps {
   data: AnalyzeResponse;
 }
 
-const NOISE_SVG =
-  "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIj48ZmlsdGVyIGlkPSJuIj48ZmVUdXJidWxlbmNlIHR5cGU9ImZyYWN0YWxOb2lzZSIgYmFzZUZyZXF1ZW5jeT0iMC43IiBudW1PY3RhdmVzPSI0IiBzdGl0Y2hUaWxlcz0ic3RpdGNoIi8+PC9maWx0ZXI+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsdGVyPSJ1cmwoI24pIiBvcGFjaXR5PSIwLjA1Ii8+PC9zdmc+";
+// Explicit font stacks — CSS vars don't always resolve in dom-to-image-more
+const HEADING_FONT = "'Space Grotesk', 'Arial Black', sans-serif";
+const BODY_FONT = "'JetBrains Mono', 'Courier New', monospace";
 
 const ResultCard = forwardRef<HTMLDivElement, ResultCardProps>(
   function ResultCard({ data }, ref) {
     const scoreColor = getScoreColor(data.score);
+    const scoreColorRgba = (alpha: number) =>
+      scoreColor.replace("rgb(", "rgba(").replace(")", `, ${alpha})`);
 
     return (
       <div
@@ -26,31 +29,31 @@ const ResultCard = forwardRef<HTMLDivElement, ResultCardProps>(
           height: "1920px",
           backgroundColor: "#0D0D0F",
           overflow: "hidden",
-          fontFamily:
-            "var(--font-space-grotesk), 'Space Grotesk', sans-serif",
         }}
       >
-        {/* Layer 1: Noise texture */}
+        {/* Layer 1: Score-colored top gradient */}
         <div
           style={{
             position: "absolute",
-            inset: 0,
-            backgroundImage: `url('${NOISE_SVG}')`,
-            opacity: 0.03,
+            top: "-100px",
+            left: "50%",
+            transform: "translateX(-50%)",
+            width: "900px",
+            height: "900px",
+            background: `radial-gradient(circle, ${scoreColorRgba(0.12)} 0%, transparent 65%)`,
             pointerEvents: "none",
           }}
         />
 
-        {/* Layer 2: Score-colored atmospheric gradient */}
+        {/* Layer 2: Bottom accent gradient */}
         <div
           style={{
             position: "absolute",
-            top: "-200px",
-            left: "-200px",
+            bottom: "-200px",
+            right: "-100px",
             width: "600px",
             height: "600px",
-            background: `radial-gradient(circle, ${scoreColor} 0%, transparent 70%)`,
-            opacity: 0.06,
+            background: `radial-gradient(circle, rgba(123, 97, 255, 0.08) 0%, transparent 70%)`,
             pointerEvents: "none",
           }}
         />
@@ -63,45 +66,41 @@ const ResultCard = forwardRef<HTMLDivElement, ResultCardProps>(
             display: "flex",
             flexDirection: "column",
             height: "100%",
-            padding: "64px",
+            padding: "72px 64px",
           }}
         >
-          {/* Title */}
+          {/* App title */}
           <div
             style={{
-              fontFamily:
-                "var(--font-space-grotesk), 'Space Grotesk', sans-serif",
-              fontSize: "64px",
+              fontFamily: HEADING_FONT,
+              fontSize: "36px",
               fontWeight: 700,
-              color: "#FAFAFA",
-              lineHeight: 1,
+              color: "#FF3B3B",
               textTransform: "uppercase",
-              letterSpacing: "-0.02em",
+              letterSpacing: "0.08em",
             }}
           >
-            Rate My
-            <br />
-            Unhinged Decision
+            Rate My Unhinged Decision
           </div>
 
           {/* Hairline divider */}
           <div
             style={{
-              marginTop: "24px",
-              height: "1px",
-              width: "100%",
-              backgroundColor: "rgba(255, 255, 255, 0.1)",
+              marginTop: "28px",
+              height: "2px",
+              width: "120px",
+              backgroundColor: "#FF3B3B",
             }}
           />
 
-          {/* Score */}
+          {/* Score section */}
           <div
             style={{
               marginTop: "80px",
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
-              gap: "12px",
+              gap: "16px",
             }}
           >
             <div
@@ -116,20 +115,19 @@ const ResultCard = forwardRef<HTMLDivElement, ResultCardProps>(
               <div
                 style={{
                   position: "absolute",
-                  width: "300px",
-                  height: "300px",
+                  width: "360px",
+                  height: "360px",
                   borderRadius: "50%",
                   backgroundColor: scoreColor,
-                  opacity: 0.15,
-                  filter: "blur(60px)",
+                  opacity: 0.12,
+                  filter: "blur(80px)",
                 }}
               />
               <span
                 style={{
                   position: "relative",
-                  fontFamily:
-                    "var(--font-space-grotesk), 'Space Grotesk', sans-serif",
-                  fontSize: "200px",
+                  fontFamily: HEADING_FONT,
+                  fontSize: "220px",
                   fontWeight: 700,
                   lineHeight: 1,
                   color: scoreColor,
@@ -140,61 +138,59 @@ const ResultCard = forwardRef<HTMLDivElement, ResultCardProps>(
             </div>
             <span
               style={{
-                fontFamily:
-                  "var(--font-space-grotesk), 'Space Grotesk', sans-serif",
-                fontSize: "24px",
+                fontFamily: HEADING_FONT,
+                fontSize: "26px",
                 fontWeight: 500,
                 color: "#71717A",
                 textTransform: "uppercase",
-                letterSpacing: "0.1em",
+                letterSpacing: "0.15em",
               }}
             >
               Unhinged Level
             </span>
           </div>
 
-          {/* Verdict card */}
+          {/* Verdict */}
           <div
             style={{
-              marginTop: "60px",
-              backgroundColor: "rgba(255, 255, 255, 0.05)",
-              borderLeft: "4px solid #FF3B3B",
+              marginTop: "64px",
+              backgroundColor: "rgba(255, 255, 255, 0.04)",
+              borderLeft: `4px solid ${scoreColor}`,
               borderRadius: "16px",
-              padding: "32px",
+              padding: "36px",
             }}
           >
             <span
               style={{
-                fontFamily:
-                  "var(--font-jetbrains-mono), 'JetBrains Mono', monospace",
-                fontSize: "36px",
+                fontFamily: BODY_FONT,
+                fontSize: "34px",
                 fontWeight: 700,
                 color: "#FAFAFA",
-                lineHeight: 1.3,
+                lineHeight: 1.35,
+                display: "block",
               }}
             >
-              {data.verdict}
+              &ldquo;{data.verdict}&rdquo;
             </span>
           </div>
 
           {/* Comparisons */}
           <div
             style={{
-              marginTop: "60px",
+              marginTop: "56px",
               display: "flex",
               flexDirection: "column",
-              gap: "20px",
+              gap: "24px",
             }}
           >
             <span
               style={{
-                fontFamily:
-                  "var(--font-space-grotesk), 'Space Grotesk', sans-serif",
+                fontFamily: HEADING_FONT,
                 fontSize: "20px",
                 fontWeight: 500,
                 color: "#71717A",
                 textTransform: "uppercase",
-                letterSpacing: "0.1em",
+                letterSpacing: "0.12em",
               }}
             >
               You Are Compared To
@@ -205,17 +201,20 @@ const ResultCard = forwardRef<HTMLDivElement, ResultCardProps>(
                 style={{
                   display: "flex",
                   alignItems: "center",
-                  gap: "12px",
+                  gap: "16px",
                 }}
               >
                 <span
                   style={{
-                    fontFamily:
-                      "var(--font-space-grotesk), 'Space Grotesk', sans-serif",
-                    fontSize: "28px",
-                    fontWeight: 500,
+                    fontFamily: HEADING_FONT,
+                    fontSize: "30px",
+                    fontWeight: 600,
                     color: "#FAFAFA",
                     flexShrink: 0,
+                    maxWidth: "700px",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
                   }}
                 >
                   {comp.name}
@@ -223,15 +222,14 @@ const ResultCard = forwardRef<HTMLDivElement, ResultCardProps>(
                 <div
                   style={{
                     flex: 1,
-                    borderBottom: "1px dashed rgba(255, 255, 255, 0.15)",
-                    marginBottom: "4px",
+                    borderBottom: "2px dashed rgba(255, 255, 255, 0.1)",
+                    minWidth: "20px",
                   }}
                 />
                 <span
                   style={{
-                    fontFamily:
-                      "var(--font-jetbrains-mono), 'JetBrains Mono', monospace",
-                    fontSize: "28px",
+                    fontFamily: BODY_FONT,
+                    fontSize: "30px",
                     fontWeight: 700,
                     color: "#7B61FF",
                     flexShrink: 0,
@@ -246,57 +244,50 @@ const ResultCard = forwardRef<HTMLDivElement, ResultCardProps>(
           {/* Spacer */}
           <div style={{ flex: 1 }} />
 
-          {/* Bottom divider */}
+          {/* Bottom section */}
           <div
             style={{
-              height: "1px",
-              width: "100%",
-              backgroundColor: "rgba(255, 255, 255, 0.1)",
-            }}
-          />
-
-          {/* Hook CTA */}
-          <div
-            style={{
-              marginTop: "32px",
+              borderTop: "1px solid rgba(255, 255, 255, 0.08)",
+              paddingTop: "36px",
               display: "flex",
-              flexDirection: "column",
-              gap: "4px",
+              justifyContent: "space-between",
+              alignItems: "flex-end",
             }}
           >
-            <span
+            <div
               style={{
-                fontFamily:
-                  "var(--font-space-grotesk), 'Space Grotesk', sans-serif",
-                fontSize: "28px",
-                fontWeight: 500,
-                color: "#A1A1AA",
+                display: "flex",
+                flexDirection: "column",
+                gap: "8px",
               }}
             >
-              How unhinged are you?
-            </span>
+              <span
+                style={{
+                  fontFamily: HEADING_FONT,
+                  fontSize: "30px",
+                  fontWeight: 600,
+                  color: "#FAFAFA",
+                }}
+              >
+                How unhinged are you?
+              </span>
+              <span
+                style={{
+                  fontFamily: BODY_FONT,
+                  fontSize: "22px",
+                  fontWeight: 400,
+                  color: "#71717A",
+                }}
+              >
+                ratemyunhinged.app
+              </span>
+            </div>
             <span
               style={{
-                fontFamily:
-                  "var(--font-jetbrains-mono), 'JetBrains Mono', monospace",
-                fontSize: "24px",
-                fontWeight: 400,
-                color: "#71717A",
-              }}
-            >
-              ratemyunhinged.app
-            </span>
-          </div>
-
-          {/* NodeSparks branding */}
-          <div style={{ marginTop: "32px" }}>
-            <span
-              style={{
-                fontFamily:
-                  "var(--font-jetbrains-mono), 'JetBrains Mono', monospace",
+                fontFamily: BODY_FONT,
                 fontSize: "18px",
                 fontWeight: 400,
-                color: "#71717A",
+                color: "#52525B",
               }}
             >
               NodeSparks
