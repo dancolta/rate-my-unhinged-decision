@@ -3,7 +3,7 @@
 import { useState, useCallback, type RefObject } from "react";
 import type { AnalyzeResponse } from "@/lib/types";
 
-type ShareState = "idle" | "generating" | "success" | "error";
+type ShareState = "idle" | "generating" | "success" | "error" | "saved";
 
 interface ShareButtonProps {
   resultData: AnalyzeResponse;
@@ -17,7 +17,6 @@ export default function ShareButton({ resultData, cardRef }: ShareButtonProps) {
     if (!cardRef.current) return null;
 
     try {
-      // Wait for fonts to fully load before capturing
       await document.fonts.ready;
       const { toBlob } = await import("html-to-image");
       const blob = await toBlob(cardRef.current, {
@@ -38,24 +37,28 @@ export default function ShareButton({ resultData, cardRef }: ShareButtonProps) {
     }
   }, [cardRef]);
 
-  const handleShare = useCallback(async () => {
+  const downloadBlob = useCallback(
+    (blob: Blob) => {
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `unhinged-score-${resultData.score}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    },
+    [resultData.score]
+  );
+
+  const handleInstagramStory = useCallback(async () => {
     setShareState("generating");
 
     try {
       const blob = await generatePng();
 
       if (!blob) {
-        // Fallback: share text only
-        const shareText = `I scored ${resultData.score}/100 on the unhinged scale. How unhinged are you? ratemyunhinged.app`;
-        if (navigator.share) {
-          await navigator.share({
-            title: "Rate My Unhinged Decision",
-            text: shareText,
-          });
-        } else {
-          await navigator.clipboard.writeText(shareText);
-        }
-        setShareState("success");
+        setShareState("error");
         setTimeout(() => setShareState("idle"), 2000);
         return;
       }
@@ -66,7 +69,7 @@ export default function ShareButton({ resultData, cardRef }: ShareButtonProps) {
         { type: "image/png" }
       );
 
-      // Mobile: use Web Share API with file
+      // Mobile with Web Share API file support — native share sheet includes Instagram
       if (navigator.share && navigator.canShare?.({ files: [file] })) {
         await navigator.share({
           files: [file],
@@ -78,29 +81,15 @@ export default function ShareButton({ resultData, cardRef }: ShareButtonProps) {
         return;
       }
 
-      // Desktop: download PNG + copy URL to clipboard
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `unhinged-score-${resultData.score}.png`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-
-      try {
-        await navigator.clipboard.writeText("https://ratemyunhinged.app");
-      } catch {
-        // clipboard write failed, that's okay
-      }
-
-      setShareState("success");
-      setTimeout(() => setShareState("idle"), 3000);
+      // Desktop / unsupported: download image + show instruction
+      downloadBlob(blob);
+      setShareState("saved");
+      setTimeout(() => setShareState("idle"), 4000);
     } catch {
-      // User cancelled share or error occurred
+      // User cancelled native share sheet
       setShareState("idle");
     }
-  }, [generatePng, resultData.score]);
+  }, [generatePng, resultData.score, downloadBlob]);
 
   const handleDownload = useCallback(async () => {
     setShareState("generating");
@@ -113,33 +102,27 @@ export default function ShareButton({ resultData, cardRef }: ShareButtonProps) {
         return;
       }
 
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `unhinged-score-${resultData.score}.png`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-
+      downloadBlob(blob);
       setShareState("success");
       setTimeout(() => setShareState("idle"), 2000);
     } catch {
       setShareState("error");
       setTimeout(() => setShareState("idle"), 2000);
     }
-  }, [generatePng, resultData.score]);
+  }, [generatePng, downloadBlob]);
 
   const buttonLabel = (() => {
     switch (shareState) {
       case "generating":
         return "GENERATING...";
       case "success":
-        return "✅ SHARED!";
+        return "SHARED!";
+      case "saved":
+        return "SAVED! OPEN IG \u2192 STORY";
       case "error":
         return "SHARE FAILED";
       default:
-        return "📸 SHARE YOUR VERDICT";
+        return "POST TO IG STORY";
     }
   })();
 
@@ -149,17 +132,20 @@ export default function ShareButton({ resultData, cardRef }: ShareButtonProps) {
     if (shareState === "success") {
       return `${base} bg-success`;
     }
-    if (shareState === "generating") {
-      return `${base} bg-primary opacity-80 cursor-wait`;
+    if (shareState === "saved") {
+      return `${base} bg-[#E1306C]`;
     }
-    return `${base} bg-primary hover:shadow-[0_4px_30px_rgba(255,45,85,0.4)] hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.97] active:shadow-none active:duration-[50ms]`;
+    if (shareState === "generating") {
+      return `${base} bg-gradient-to-r from-[#833AB4] via-[#E1306C] to-[#F77737] opacity-80 cursor-wait`;
+    }
+    return `${base} bg-gradient-to-r from-[#833AB4] via-[#E1306C] to-[#F77737] hover:shadow-[0_4px_30px_rgba(225,48,108,0.4)] hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.97] active:shadow-none active:duration-[50ms]`;
   })();
 
   return (
     <div className="flex flex-col gap-2 w-full">
       <button
         type="button"
-        onClick={handleShare}
+        onClick={handleInstagramStory}
         disabled={shareState === "generating"}
         className={buttonClasses}
         style={{ padding: "14px 28px" }}
