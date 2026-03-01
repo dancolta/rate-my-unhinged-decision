@@ -384,19 +384,6 @@ const ResultCard = forwardRef<HTMLDivElement, ResultCardProps>(
               })}
             </div>
 
-            {/* Site URL */}
-            <div
-              style={{
-                ...R,
-                textAlign: "center" as const,
-                marginTop: "20px",
-                fontFamily: B,
-                fontSize: "20px",
-                color: "#5A5A64",
-              }}
-            >
-              ratemyunhinged.app
-            </div>
           </div>
         </div>
       </div>
