@@ -1,26 +1,207 @@
 @import "tailwindcss";
 
+/* ==========================================
+   DESIGN SYSTEM: Rate My Unhinged Decision
+   "Crime Scene Report Meets Late-Night Talk Show"
+   ========================================== */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  color-scheme: dark;
+
+  /* Core Brand */
+  --color-primary: #FF3B3B;
+  --color-secondary: #FFB800;
+  --color-tertiary: #7B61FF;
+
+  /* Backgrounds */
+  --color-bg-base: #0D0D0F;
+  --color-bg-surface: #18181B;
+  --color-bg-elevated: #27272A;
+  --color-bg-glass: rgba(24, 24, 27, 0.85);
+
+  /* Text */
+  --color-text-primary: #FAFAFA;
+  --color-text-secondary: #A1A1AA;
+  --color-text-muted: #71717A;
+
+  /* Semantic */
+  --color-success: #22C55E;
+  --color-warning: #FFB800;
+  --color-error: #EF4444;
+  --color-info: #3B82F6;
+
+  /* Score Gradient Stops */
+  --color-score-0: #22C55E;
+  --color-score-25: #84CC16;
+  --color-score-50: #FFB800;
+  --color-score-75: #F97316;
+  --color-score-100: #FF3B3B;
+
+  /* Typography -- assigned by next/font in layout.tsx */
+  --font-heading: var(--font-space-grotesk);
+  --font-body: var(--font-jetbrains-mono);
+
+  /* Shadows / Glow */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
+  --shadow-glow-red: 0 0 60px rgba(255, 59, 59, 0.2);
+  --shadow-glow-yellow: 0 0 60px rgba(255, 184, 0, 0.2);
+  --shadow-glow-green: 0 0 60px rgba(34, 197, 94, 0.15);
+
+  /* Easing Curves */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-bounce: cubic-bezier(0.68, -0.55, 0.27, 1.55);
+
+  /* Duration */
+  --duration-fast: 100ms;
+  --duration-normal: 200ms;
+  --duration-slow: 400ms;
+  --duration-dramatic: 800ms;
+
+  /* Borders */
+  --border-subtle: 1px solid rgba(255, 255, 255, 0.08);
+  --border-medium: 1px solid rgba(255, 255, 255, 0.15);
+  --border-strong: 1px solid rgba(255, 255, 255, 0.25);
+  --border-accent: 2px solid #FF3B3B;
 }
 
+/* Tailwind CSS 4 @theme mapping */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-background: var(--color-bg-base);
+  --color-foreground: var(--color-text-primary);
+  --color-primary: var(--color-primary);
+  --color-secondary: var(--color-secondary);
+  --color-tertiary: var(--color-tertiary);
+  --color-surface: var(--color-bg-surface);
+  --color-elevated: var(--color-bg-elevated);
+  --color-text-primary: var(--color-text-primary);
+  --color-text-secondary: var(--color-text-secondary);
+  --color-text-muted: var(--color-text-muted);
+  --color-success: var(--color-success);
+  --color-warning: var(--color-warning);
+  --color-error: var(--color-error);
+  --color-info: var(--color-info);
+  --font-heading: var(--font-heading);
+  --font-body: var(--font-body);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* ==========================================
+   BASE BODY STYLES
+   ========================================== */
+
+html {
+  background-color: var(--color-bg-base);
+  color: var(--color-text-primary);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-bg-base);
+  color: var(--color-text-primary);
+  font-family: var(--font-body), ui-monospace, monospace;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-height: 100dvh;
+}
+
+/* ==========================================
+   ANIMATION KEYFRAMES
+   ========================================== */
+
+@keyframes fadeSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes scorePulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.06);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes errorShake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  20% {
+    transform: translateX(-3px);
+  }
+  40% {
+    transform: translateX(3px);
+  }
+  60% {
+    transform: translateX(-2px);
+  }
+  80% {
+    transform: translateX(2px);
+  }
+}
+
+@keyframes blink {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+@keyframes barFill {
+  from {
+    width: 0%;
+  }
+  to {
+    width: var(--percentage);
+  }
+}
+
+@keyframes shareSuccess {
+  0% {
+    transform: scale(1);
+  }
+  30% {
+    transform: scale(1.05);
+    background-color: #22C55E;
+  }
+  100% {
+    transform: scale(1);
+    background-color: #FF3B3B;
+  }
+}
+
+/* ==========================================
+   REDUCED MOTION SUPPORT
+   ========================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
