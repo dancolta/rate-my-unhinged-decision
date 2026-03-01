@@ -133,7 +133,7 @@ const ResultCard = forwardRef<HTMLDivElement, ResultCardProps>(
             position: "relative",
             zIndex: 3,
             height: "100%",
-            padding: "64px 72px 56px",
+            padding: "200px 72px 56px",
           }}
         >
           {/* ─── TOP: Brand + Confession ─── */}

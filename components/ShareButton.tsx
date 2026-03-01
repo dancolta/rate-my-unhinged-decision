@@ -122,7 +122,7 @@ export default function ShareButton({ resultData, cardRef }: ShareButtonProps) {
       case "error":
         return "SHARE FAILED";
       default:
-        return "POST TO IG STORY";
+        return "SHAME YOURSELF PUBLICLY";
     }
   })();
 
