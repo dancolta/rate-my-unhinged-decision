@@ -2,52 +2,51 @@
 
 /* ==========================================
    DESIGN SYSTEM: Rate My Unhinged Decision
-   "Crime Scene Report Meets Late-Night Talk Show"
+   "Chaotic Fun — Dark but ALIVE"
    ========================================== */
 
 :root {
   color-scheme: dark;
 
   /* Core Brand */
-  --color-primary: #FF3B3B;
-  --color-secondary: #FFB800;
-  --color-tertiary: #7B61FF;
+  --color-primary: #FF2D55;
+  --color-secondary: #FF9500;
+  --color-tertiary: #AF52DE;
 
-  /* Backgrounds */
-  --color-bg-base: #0D0D0F;
-  --color-bg-surface: #18181B;
-  --color-bg-elevated: #27272A;
-  --color-bg-glass: rgba(24, 24, 27, 0.85);
+  /* Backgrounds — warm dark, never pure black */
+  --color-bg-base: #0f0f1a;
+  --color-bg-surface: rgba(255, 255, 255, 0.06);
+  --color-bg-elevated: rgba(255, 255, 255, 0.1);
+  --color-bg-glass: rgba(255, 255, 255, 0.08);
 
-  /* Text */
-  --color-text-primary: #FAFAFA;
-  --color-text-secondary: #A1A1AA;
-  --color-text-muted: #71717A;
+  /* Text — warm off-white, not pure white */
+  --color-text-primary: #e8e6e3;
+  --color-text-secondary: #a8a6a3;
+  --color-text-muted: #7a7875;
 
   /* Semantic */
-  --color-success: #22C55E;
-  --color-warning: #FFB800;
-  --color-error: #EF4444;
-  --color-info: #3B82F6;
+  --color-success: #30D158;
+  --color-warning: #FF9500;
+  --color-error: #FF453A;
+  --color-info: #007AFF;
 
   /* Score Gradient Stops */
-  --color-score-0: #22C55E;
-  --color-score-25: #84CC16;
-  --color-score-50: #FFB800;
-  --color-score-75: #F97316;
-  --color-score-100: #FF3B3B;
+  --color-score-0: #30D158;
+  --color-score-25: #FFD60A;
+  --color-score-50: #FF9500;
+  --color-score-75: #FF453A;
+  --color-score-100: #FF2D55;
 
-  /* Typography -- assigned by next/font in layout.tsx */
+  /* Typography */
   --font-heading: var(--font-space-grotesk);
-  --font-body: var(--font-jetbrains-mono);
+  --font-body: var(--font-plus-jakarta);
 
   /* Shadows / Glow */
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
   --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
   --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5);
-  --shadow-glow-red: 0 0 60px rgba(255, 59, 59, 0.2);
-  --shadow-glow-yellow: 0 0 60px rgba(255, 184, 0, 0.2);
-  --shadow-glow-green: 0 0 60px rgba(34, 197, 94, 0.15);
+  --shadow-glow-red: 0 0 60px rgba(255, 45, 85, 0.2);
+  --shadow-glow-purple: 0 0 60px rgba(175, 82, 222, 0.2);
 
   /* Easing Curves */
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
@@ -63,8 +62,7 @@
   /* Borders */
   --border-subtle: 1px solid rgba(255, 255, 255, 0.08);
   --border-medium: 1px solid rgba(255, 255, 255, 0.15);
-  --border-strong: 1px solid rgba(255, 255, 255, 0.25);
-  --border-accent: 2px solid #FF3B3B;
+  --border-glass: 1px solid rgba(255, 255, 255, 0.12);
 }
 
 /* Tailwind CSS 4 @theme mapping */
@@ -99,10 +97,74 @@ html {
 body {
   background: var(--color-bg-base);
   color: var(--color-text-primary);
-  font-family: var(--font-body), ui-monospace, monospace;
+  font-family: var(--font-body), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   min-height: 100dvh;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Animated gradient blobs for depth */
+body::before {
+  content: '';
+  position: fixed;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(circle at 20% 30%, rgba(175, 82, 222, 0.08) 0%, transparent 50%),
+    radial-gradient(circle at 80% 70%, rgba(255, 45, 85, 0.06) 0%, transparent 50%),
+    radial-gradient(circle at 50% 50%, rgba(255, 149, 0, 0.04) 0%, transparent 40%);
+  animation: blobDrift 20s ease-in-out infinite alternate;
+}
+
+@keyframes blobDrift {
+  0% { transform: translate(0, 0) rotate(0deg); }
+  33% { transform: translate(30px, -20px) rotate(3deg); }
+  66% { transform: translate(-20px, 30px) rotate(-2deg); }
+  100% { transform: translate(10px, -10px) rotate(1deg); }
+}
+
+/* Subtle noise */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  opacity: 0.015;
+  pointer-events: none;
+  z-index: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 200px 200px;
+}
+
+body > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ==========================================
+   GLASSMORPHISM UTILITY
+   ========================================== */
+
+.glass {
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.glass-strong {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(16px) saturate(200%);
+  -webkit-backdrop-filter: blur(16px) saturate(200%);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
 }
 
 /* ==========================================
@@ -121,74 +183,141 @@ body {
 }
 
 @keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
 }
 
 @keyframes scorePulse {
-  0% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.06);
-  }
-  100% {
-    transform: scale(1);
-  }
+  0% { transform: scale(1); }
+  50% { transform: scale(1.06); }
+  100% { transform: scale(1); }
+}
+
+@keyframes scoreSlam {
+  0% { transform: scale(0.3); opacity: 0; }
+  60% { transform: scale(1.15); opacity: 1; }
+  80% { transform: scale(0.95); }
+  100% { transform: scale(1); }
+}
+
+@keyframes screenShake {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  10% { transform: translate(-4px, -2px) rotate(-0.5deg); }
+  20% { transform: translate(4px, 2px) rotate(0.5deg); }
+  30% { transform: translate(-3px, 1px) rotate(-0.3deg); }
+  40% { transform: translate(3px, -1px) rotate(0.3deg); }
+  50% { transform: translate(-2px, 2px) rotate(-0.2deg); }
+  60% { transform: translate(2px, -2px) rotate(0.2deg); }
+  70% { transform: translate(-1px, 1px) rotate(0deg); }
+}
+
+@keyframes reactionPop {
+  0% { transform: scale(0) rotate(-30deg); opacity: 0; }
+  50% { transform: scale(1.3) rotate(10deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
 }
 
 @keyframes errorShake {
-  0%, 100% {
-    transform: translateX(0);
-  }
-  20% {
-    transform: translateX(-3px);
-  }
-  40% {
-    transform: translateX(3px);
-  }
-  60% {
-    transform: translateX(-2px);
-  }
-  80% {
-    transform: translateX(2px);
-  }
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-3px); }
+  40% { transform: translateX(3px); }
+  60% { transform: translateX(-2px); }
+  80% { transform: translateX(2px); }
 }
 
 @keyframes blink {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0;
-  }
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
 }
 
 @keyframes barFill {
-  from {
-    width: 0%;
-  }
-  to {
-    width: var(--percentage);
-  }
+  from { width: 0%; }
+  to { width: var(--percentage); }
 }
 
-@keyframes shareSuccess {
-  0% {
-    transform: scale(1);
-  }
-  30% {
-    transform: scale(1.05);
-    background-color: #22C55E;
-  }
-  100% {
-    transform: scale(1);
-    background-color: #FF3B3B;
-  }
+/* Logo animations */
+@keyframes logoFloat {
+  0%, 100% { transform: rotate(-8deg) translateY(0px); }
+  25% { transform: rotate(-5deg) translateY(-4px); }
+  50% { transform: rotate(-10deg) translateY(-2px); }
+  75% { transform: rotate(-6deg) translateY(-5px); }
+}
+
+@keyframes logoTextWobble {
+  0%, 100% { transform: rotate(8deg) scale(1); }
+  25% { transform: rotate(5deg) scale(1.05); }
+  50% { transform: rotate(10deg) scale(1); }
+  75% { transform: rotate(6deg) scale(1.03); }
+}
+
+@keyframes logoPulse {
+  0%, 100% { box-shadow: 0 0 24px rgba(255, 45, 85, 0.2), inset 0 0 12px rgba(255, 45, 85, 0.06); }
+  50% { box-shadow: 0 0 40px rgba(255, 45, 85, 0.45), inset 0 0 20px rgba(255, 45, 85, 0.15); }
+}
+
+/* Tagline */
+@keyframes taglinePop {
+  0%, 100% { opacity: 0.7; transform: translateY(0); }
+  15% { opacity: 1; transform: translateY(-2px); }
+  30% { opacity: 0.7; transform: translateY(0); }
+}
+
+/* Loading animations */
+@keyframes ringExpand {
+  0% { transform: scale(0.5); opacity: 0.6; border-color: rgba(255, 45, 85, 0.2); }
+  50% { opacity: 0.3; }
+  100% { transform: scale(1.5); opacity: 0; border-color: rgba(255, 45, 85, 0); }
+}
+
+@keyframes particleFloat {
+  0% { opacity: 0; transform: translateY(0) scale(1); }
+  10% { opacity: 0.8; }
+  50% { opacity: 0.4; }
+  100% { opacity: 0; transform: translateY(-500px) scale(0.2); }
+}
+
+@keyframes loadingLogoSpin {
+  0% { transform: rotate(-8deg); }
+  25% { transform: rotate(15deg); }
+  50% { transform: rotate(-12deg); }
+  75% { transform: rotate(8deg); }
+  100% { transform: rotate(-8deg); }
+}
+
+@keyframes loadingTextCounterSpin {
+  0% { transform: rotate(8deg); }
+  25% { transform: rotate(-15deg); }
+  50% { transform: rotate(12deg); }
+  75% { transform: rotate(-8deg); }
+  100% { transform: rotate(8deg); }
+}
+
+@keyframes statusRotate {
+  0%, 18%   { transform: translateY(0); }
+  22%, 43%  { transform: translateY(-24px); }
+  47%, 68%  { transform: translateY(-48px); }
+  72%, 93%  { transform: translateY(-72px); }
+  97%, 100% { transform: translateY(0); }
+}
+
+@keyframes glitchFlicker {
+  0%, 100% { opacity: 1; }
+  42% { opacity: 1; }
+  42.5% { opacity: 0.6; }
+  43% { opacity: 1; }
+  77% { opacity: 1; }
+  77.3% { opacity: 0.7; }
+  77.6% { opacity: 1; }
+}
+
+@keyframes hintPulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+@keyframes glowPulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
 }
 
 /* ==========================================

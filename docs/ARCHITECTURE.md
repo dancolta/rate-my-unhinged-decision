@@ -9,12 +9,12 @@ These decisions were confirmed during the Phase 3 stress test and override any c
 | Area | Decision | Rationale |
 |------|----------|-----------|
 | **Routing** | Single page with state transitions (`app/page.tsx` only, delete `app/result/page.tsx`) | Smooth CSS transitions between input/loading/result states. No URL changes. |
-| **Card generation** | `dom-to-image-more` (client-side) with text-only share fallback | Full CSS fidelity for the design spec. Better Safari support than html-to-image. If image gen fails, share text only. |
+| **Card generation** | `html-to-image` (client-side) with text-only share fallback | Uses SVG foreignObject for pixel-perfect CSS fidelity. If image gen fails, share text only. |
 | **Groq rate limits** | Model fallback: Llama 3.3 70B primary -> Mixtral 8x7B secondary | Doubles effective capacity. If primary model 429s, auto-retry with secondary. |
 | **Loading delay** | Client-side: `Promise.all([apiCall, sleep(2000)])` | Minimum 2s loading for anticipation. No artificial delay on the server. |
 | **JSON parsing** | Groq JSON mode + Zod schema validation + canned fallback | Triple-layer safety. JSON mode first, Zod validates schema, hardcoded funny fallback if all fails. |
 | **Persistence** | None -- zero state, no localStorage, no database | Throwaway viral app. Users share the card image, don't need to revisit results. |
-| **Dependencies** | Replace `html-to-image` with `dom-to-image-more` in package.json | Better Safari/iOS WebKit compatibility for the viral sharing loop. |
+| **Dependencies** | `html-to-image` for client-side card generation | SVG foreignObject approach delegates CSS rendering to the browser's own engine. |
 
 ---
 

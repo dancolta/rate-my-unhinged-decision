@@ -75,7 +75,7 @@ export default function ErrorBoundary({ error, onRetry }: ErrorBoundaryProps) {
       }}
     >
       <div
-        className={`rounded-2xl border border-white/8 bg-surface p-4 md:p-6 border-l-4 ${getBorderColor()} animate-[errorShake_0.3s_ease-out]`}
+        className={`glass rounded-2xl p-4 md:p-5 border-l-4 ${getBorderColor()} animate-[errorShake_0.3s_ease-out]`}
       >
         <h2
           className={`font-heading text-lg font-bold uppercase ${getTitleColor()}`}
@@ -101,9 +101,9 @@ export default function ErrorBoundary({ error, onRetry }: ErrorBoundaryProps) {
           type="button"
           onClick={handleRetry}
           disabled={!canRetry}
-          className={`w-full min-h-[48px] lg:min-h-[52px] rounded-xl font-heading text-base font-bold uppercase tracking-[0.1em] text-text-primary transition-all duration-150 ease-out ${
+          className={`w-full min-h-[48px] rounded-2xl font-heading text-base font-bold uppercase tracking-wide text-white transition-all duration-150 ease-out ${
             canRetry
-              ? "bg-primary hover:bg-[#E63535] hover:-translate-y-px hover:shadow-[0_4px_24px_rgba(255,59,59,0.3)] active:translate-y-0 active:scale-[0.97] active:shadow-none active:duration-[50ms]"
+              ? "bg-primary hover:shadow-[0_4px_30px_rgba(255,45,85,0.4)] hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.97] active:shadow-none active:duration-[50ms]"
               : "bg-elevated text-text-muted cursor-not-allowed"
           }`}
           style={{ padding: "14px 28px" }}

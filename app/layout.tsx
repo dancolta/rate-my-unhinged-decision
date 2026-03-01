@@ -1,18 +1,19 @@
 import type { Metadata, Viewport } from "next";
-import { Space_Grotesk, JetBrains_Mono } from "next/font/google";
+import { Space_Grotesk, Plus_Jakarta_Sans } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-space-grotesk",
   subsets: ["latin"],
-  weight: ["500", "700"],
+  weight: ["500", "600", "700"],
   display: "swap",
 });
 
-const jetbrainsMono = JetBrains_Mono({
-  variable: "--font-jetbrains-mono",
+const plusJakartaSans = Plus_Jakarta_Sans({
+  variable: "--font-plus-jakarta",
   subsets: ["latin"],
-  weight: ["400", "700"],
+  weight: ["400", "500", "600", "700"],
   display: "swap",
 });
 
@@ -42,7 +43,7 @@ export const metadata: Metadata = {
     images: ["/og-image.png"],
   },
   other: {
-    "theme-color": "#0D0D0F",
+    "theme-color": "#0f0f1a",
     "color-scheme": "dark",
   },
 };
@@ -51,7 +52,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
-  themeColor: "#0D0D0F",
+  themeColor: "#0f0f1a",
 };
 
 export default function RootLayout({
@@ -62,9 +63,10 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body
-        className={`${spaceGrotesk.variable} ${jetbrainsMono.variable} antialiased`}
+        className={`${spaceGrotesk.variable} ${plusJakartaSans.variable} antialiased`}
       >
         {children}
+        <Analytics />
       </body>
     </html>
   );

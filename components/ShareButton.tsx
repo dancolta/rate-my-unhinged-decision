@@ -19,15 +19,20 @@ export default function ShareButton({ resultData, cardRef }: ShareButtonProps) {
     try {
       // Wait for fonts to fully load before capturing
       await document.fonts.ready;
-      const domtoimage = await import("dom-to-image-more");
-      const dataUrl = await domtoimage.toPng(cardRef.current, {
+      const { toBlob } = await import("html-to-image");
+      const blob = await toBlob(cardRef.current, {
         width: 1080,
         height: 1920,
-        cacheBust: true,
-        bgcolor: "#0D0D0F",
+        backgroundColor: "#0f0f1a",
+        pixelRatio: 1,
+        skipAutoScale: true,
+        style: {
+          position: "static",
+          left: "auto",
+          top: "auto",
+        },
       });
-      const response = await fetch(dataUrl);
-      return await response.blob();
+      return blob;
     } catch {
       return null;
     }
@@ -130,28 +135,28 @@ export default function ShareButton({ resultData, cardRef }: ShareButtonProps) {
       case "generating":
         return "GENERATING...";
       case "success":
-        return "SHARED";
+        return "✅ SHARED!";
       case "error":
         return "SHARE FAILED";
       default:
-        return "SHARE YOUR VERDICT";
+        return "📸 SHARE YOUR VERDICT";
     }
   })();
 
   const buttonClasses = (() => {
     const base =
-      "w-full min-h-[48px] lg:min-h-[52px] rounded-xl font-heading text-base font-bold uppercase tracking-[0.1em] text-text-primary transition-all duration-150 ease-out";
+      "w-full min-h-[52px] rounded-2xl font-heading text-base font-bold uppercase tracking-wide text-white transition-all duration-150 ease-out";
     if (shareState === "success") {
       return `${base} bg-success`;
     }
     if (shareState === "generating") {
       return `${base} bg-primary opacity-80 cursor-wait`;
     }
-    return `${base} bg-primary hover:bg-[#E63535] hover:-translate-y-px hover:shadow-[0_4px_24px_rgba(255,59,59,0.3)] active:translate-y-0 active:scale-[0.97] active:shadow-none active:duration-[50ms]`;
+    return `${base} bg-primary hover:shadow-[0_4px_30px_rgba(255,45,85,0.4)] hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.97] active:shadow-none active:duration-[50ms]`;
   })();
 
   return (
-    <div className="flex flex-col gap-2 items-center">
+    <div className="flex flex-col gap-2 w-full">
       <button
         type="button"
         onClick={handleShare}
@@ -166,9 +171,9 @@ export default function ShareButton({ resultData, cardRef }: ShareButtonProps) {
         type="button"
         onClick={handleDownload}
         disabled={shareState === "generating"}
-        className="font-body text-sm text-text-secondary underline underline-offset-4 transition-colors duration-150 hover:text-text-primary disabled:opacity-50 disabled:cursor-not-allowed min-h-[48px] flex items-center justify-center"
+        className="font-body text-xs text-text-muted underline underline-offset-4 transition-colors duration-150 hover:text-text-primary disabled:opacity-50 disabled:cursor-not-allowed py-1 text-center"
       >
-        download card
+        or download card
       </button>
     </div>
   );

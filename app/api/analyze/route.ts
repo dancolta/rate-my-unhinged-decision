@@ -155,48 +155,62 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // 4. Rate limit
+  // 4. Rate limit (skip in development for local testing)
   const ip = getClientIP(request);
   let remaining: number;
   let reset: number;
+  const isDev = process.env.NODE_ENV === "development";
 
-  try {
-    const rateResult = await rateLimiter.limit(ip);
-    remaining = rateResult.remaining;
-    reset = rateResult.reset;
-
-    if (!rateResult.success) {
-      const retryAfter = Math.ceil((reset - Date.now()) / 1000);
-      return errorResponse(
-        429,
-        "RATE_LIMITED",
-        "Slow down, chaos agent. The tribunal needs a recess. Try again in a few minutes.",
-        true,
-        retryAfter,
-        {
-          "Retry-After": String(retryAfter),
-          "X-RateLimit-Remaining": "0",
-          "X-RateLimit-Reset": String(Math.ceil(reset / 1000)),
-        }
-      );
-    }
-  } catch (rateLimitErr) {
-    // If Upstash is down, log and continue (fail open for availability)
-    console.error("Rate limit check failed:", rateLimitErr);
-    remaining = -1;
+  if (isDev) {
+    remaining = 999;
     reset = 0;
+  } else {
+    try {
+      const rateResult = await rateLimiter.limit(ip);
+      remaining = rateResult.remaining;
+      reset = rateResult.reset;
+
+      if (!rateResult.success) {
+        const retryAfter = Math.ceil((reset - Date.now()) / 1000);
+        return errorResponse(
+          429,
+          "RATE_LIMITED",
+          "Slow down, chaos agent. The tribunal needs a recess. Try again in a few minutes.",
+          true,
+          retryAfter,
+          {
+            "Retry-After": String(retryAfter),
+            "X-RateLimit-Remaining": "0",
+            "X-RateLimit-Reset": String(Math.ceil(reset / 1000)),
+          }
+        );
+      }
+    } catch (rateLimitErr) {
+      // If Upstash is down, log and continue (fail open for availability)
+      console.error("Rate limit check failed:", rateLimitErr);
+      remaining = -1;
+      reset = 0;
+    }
   }
 
-  // 5. Call AI (with 1 retry on failure)
+  // 5. Call AI (with 1 retry on retryable failures)
   let result: Awaited<ReturnType<typeof analyzeDecision>>;
   try {
     result = await analyzeDecision(input);
   } catch (firstErr) {
-    // Retry once on parse/schema errors (handles ~5% malformed JSON from LLMs)
+    // Retry once on retryable errors (parse/schema errors from LLM malformed JSON,
+    // service errors from transient Groq outages, empty responses)
+    const retryableCodes = new Set([
+      "AI_PARSE_ERROR",
+      "AI_SCHEMA_ERROR",
+      "AI_SERVICE_ERROR",
+      "EMPTY_AI_RESPONSE",
+    ]);
     if (
       firstErr instanceof AIError &&
-      (firstErr.code === "AI_PARSE_ERROR" || firstErr.code === "AI_SCHEMA_ERROR")
+      retryableCodes.has(firstErr.code)
     ) {
+      console.warn(`First AI call failed (${firstErr.code}), retrying:`, firstErr.message);
       try {
         result = await analyzeDecision(input);
       } catch (retryErr) {

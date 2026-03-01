@@ -1,5 +1,5 @@
 // IP rate limiting via Upstash Redis
-// Sliding window: 10 requests per IP per rolling hour
+// Sliding window: 15 requests per IP per rolling hour
 
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
@@ -11,7 +11,7 @@ const redis = new Redis({
 
 export const rateLimiter = new Ratelimit({
   redis,
-  limiter: Ratelimit.slidingWindow(10, "1 h"), // 10 requests per IP per rolling hour
+  limiter: Ratelimit.slidingWindow(15, "1 h"), // 15 requests per IP per rolling hour
   analytics: true,                               // Track usage in Upstash dashboard
   prefix: "rmud",                                // Key prefix: "rmud:<ip>"
 });

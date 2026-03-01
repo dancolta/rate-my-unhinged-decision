@@ -8,7 +8,7 @@ User describes something questionable they did. AI rates their unhinged level (0
 ## Tech Stack
 - **Frontend:** Next.js 14+ (App Router), Tailwind CSS
 - **AI:** Groq free tier (Llama 3.3 70B or Mixtral 8x7B)
-- **Rate Limiting:** Upstash Redis (per-IP, 10 req/hour)
+- **Rate Limiting:** Upstash Redis (per-IP, 15 req/hour)
 - **Card Generation:** html-to-image (client-side)
 - **Sharing:** Web Share API + clipboard fallback
 - **Deployment:** Vercel

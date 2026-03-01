@@ -1,5 +1,5 @@
 // Groq API wrapper for AI calls
-// - Model fallback (Llama 3.3 70B -> Mixtral 8x7B on 429)
+// - Model fallback (Llama 3.3 70B -> Llama 3.1 8B on 429 or model unavailability)
 // - 15-second timeout per call
 // - Zod schema validation on parsed response
 // - Typed errors for the route handler to catch
@@ -89,6 +89,29 @@ async function callGroq(
 }
 
 /**
+ * Returns true if the error indicates the model is unavailable
+ * (decommissioned, not found, etc.) and we should try a fallback.
+ */
+function isModelUnavailableError(err: unknown): boolean {
+  if (err instanceof APIError && err.status === 400) {
+    const msg = (err.message ?? "").toLowerCase();
+    return msg.includes("decommissioned") || msg.includes("not found") || msg.includes("not supported");
+  }
+  return false;
+}
+
+/**
+ * Returns true if the error is a rate limit or model unavailability
+ * that should trigger fallback to an alternative model.
+ */
+function shouldFallback(err: unknown): boolean {
+  if (err instanceof RateLimitError) return true;
+  if (err instanceof AIError && err.code === "AI_RATE_LIMITED") return true;
+  if (isModelUnavailableError(err)) return true;
+  return false;
+}
+
+/**
  * Wraps Groq SDK errors into our typed AIError so the route handler
  * can map them to the correct HTTP status and error code.
  */
@@ -108,6 +131,12 @@ function wrapGroqError(err: unknown): never {
       "Groq API rate limit exceeded"
     );
   }
+  if (isModelUnavailableError(err)) {
+    throw new AIError(
+      "AI_SERVICE_ERROR",
+      `Model unavailable: ${(err as APIError).message}`
+    );
+  }
   if (err instanceof APIError) {
     throw new AIError(
       "AI_SERVICE_ERROR",
@@ -123,8 +152,8 @@ function wrapGroqError(err: unknown): never {
 
 /**
  * Primary entry point. Calls the primary model first.
- * If the primary model returns a 429, automatically retries with the
- * fallback model. All other errors propagate as typed AIErrors.
+ * If the primary model returns a 429 or is unavailable, automatically
+ * retries with the fallback model. All other errors propagate as typed AIErrors.
  *
  * Returns the model name used alongside the payload so the route handler
  * can include it in metadata.
@@ -139,12 +168,12 @@ export async function analyzeDecision(
     const payload = await callGroq(input, targetModel);
     return { ...payload, _model: targetModel };
   } catch (err) {
-    // If the primary model got rate-limited, try the fallback
-    if (
-      !model && // only auto-fallback on the first call (not when already using fallback)
-      (err instanceof RateLimitError ||
-        (err instanceof AIError && err.code === "AI_RATE_LIMITED"))
-    ) {
+    // If the primary model got rate-limited or is unavailable, try the fallback
+    if (!model && shouldFallback(err)) {
+      console.warn(
+        `Primary model ${targetModel} unavailable, falling back to ${AI_CONFIG.fallbackModel}:`,
+        err instanceof Error ? err.message : err
+      );
       try {
         const payload = await callGroq(input, AI_CONFIG.fallbackModel);
         return { ...payload, _model: AI_CONFIG.fallbackModel };

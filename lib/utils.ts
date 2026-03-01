@@ -29,13 +29,13 @@ interface GradientStop {
   b: number;
 }
 
-/** Gradient stops: green -> lime -> yellow -> orange -> red */
+/** Gradient stops: green -> yellow -> orange -> red-orange -> hot pink */
 const GRADIENT_STOPS: GradientStop[] = [
-  { score: 0,   r: 34,  g: 197, b: 94  }, // green
-  { score: 25,  r: 132, g: 204, b: 22  }, // lime
-  { score: 50,  r: 234, g: 179, b: 8   }, // yellow
-  { score: 75,  r: 249, g: 115, b: 22  }, // orange
-  { score: 100, r: 239, g: 68,  b: 68  }, // red
+  { score: 0,   r: 48,  g: 209, b: 88  }, // #30D158 green
+  { score: 25,  r: 255, g: 214, b: 10  }, // #FFD60A yellow
+  { score: 50,  r: 255, g: 149, b: 0   }, // #FF9500 orange
+  { score: 75,  r: 255, g: 69,  b: 58  }, // #FF453A red-orange
+  { score: 100, r: 255, g: 45,  b: 85  }, // #FF2D55 hot pink
 ];
 
 /**

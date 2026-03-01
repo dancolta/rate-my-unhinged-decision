@@ -1,8 +1,7 @@
 "use client";
 
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback } from "react";
 import Header from "@/components/Header";
-import Footer from "@/components/Footer";
 import InputForm from "@/components/InputForm";
 import LoadingState from "@/components/LoadingState";
 import ScoreDisplay from "@/components/ScoreDisplay";
@@ -24,6 +23,7 @@ function sleep(ms: number): Promise<void> {
 export default function Home() {
   const [appState, setAppState] = useState<AppState>("input");
   const [resultData, setResultData] = useState<AnalyzeResponse | null>(null);
+  const [userInput, setUserInput] = useState("");
   const [errorData, setErrorData] = useState<ApiError | null>(null);
   const [rateLimitInfo, setRateLimitInfo] = useState<RateLimitInfo | null>(
     null
@@ -32,6 +32,7 @@ export default function Home() {
 
   const handleSubmit = useCallback(async (input: string) => {
     setAppState("loading");
+    setUserInput(input);
     setErrorData(null);
 
     try {
@@ -41,10 +42,9 @@ export default function Home() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ input }),
         }),
-        sleep(2000),
+        sleep(3500),
       ]);
 
-      // Extract rate limit headers from any response
       const remaining = parseInt(
         response.headers.get("X-RateLimit-Remaining") ?? "10"
       );
@@ -56,7 +56,6 @@ export default function Home() {
       if (!response.ok) {
         const errorBody: ApiError = await response.json();
 
-        // For rate limit errors, extract retryAfter from response
         if (response.status === 429) {
           const retryAfter = parseInt(
             response.headers.get("Retry-After") ?? "60"
@@ -89,270 +88,209 @@ export default function Home() {
 
   const handleTryAgain = useCallback(() => {
     setResultData(null);
+    setUserInput("");
     setErrorData(null);
     setAppState("input");
   }, []);
 
   return (
-    <main className="flex min-h-dvh flex-col">
-      <div className="mx-auto w-full max-w-[480px] px-4 md:px-6 pt-8 md:pt-12 lg:pt-20 flex flex-1 flex-col">
-        {/* Header -- always visible */}
-        <div
-          className="opacity-0"
-          style={{
-            animation: "fadeSlideUp 0.5s var(--ease-out) forwards",
-          }}
-        >
-          <Header />
-        </div>
+    <>
+      {/* Loading — replaces everything */}
+      {appState === "loading" && <LoadingState />}
 
-        {/* Content area */}
-        <div className="mt-6 md:mt-8 lg:mt-10 flex-1">
-          {/* INPUT STATE */}
-          {appState === "input" && (
-            <div
-              className="flex flex-col gap-6 opacity-0"
-              style={{
-                animation: "fadeSlideUp 0.5s var(--ease-out) 0.2s forwards",
-              }}
-            >
-              {errorData && (
-                <ErrorBoundary error={errorData} onRetry={handleRetry} />
-              )}
-              <InputForm
-                onSubmit={handleSubmit}
-                disabled={false}
-                rateLimitInfo={rateLimitInfo}
-              />
-            </div>
-          )}
+      <main className={`flex min-h-dvh flex-col ${appState === "loading" ? "hidden" : ""}`}>
+        <div className="mx-auto w-full max-w-[480px] lg:max-w-[560px] px-4 md:px-6 pt-14 md:pt-10 lg:pt-16 flex flex-1 flex-col pb-20 md:pb-8">
+          {/* Header */}
+          <div
+            className="opacity-0"
+            style={{
+              animation: "fadeSlideUp 0.5s var(--ease-out) forwards",
+            }}
+          >
+            <Header />
+          </div>
 
-          {/* LOADING STATE */}
-          {appState === "loading" && (
-            <div className="mt-8 md:mt-12">
-              <LoadingState />
-            </div>
-          )}
-
-          {/* RESULT STATE */}
-          {appState === "result" && resultData && (
-            <div className="flex flex-col gap-6 md:gap-9 lg:gap-12">
-              {/* Score */}
+          {/* Content */}
+          <div className="mt-6 md:mt-8 lg:mt-10 flex-1">
+            {/* INPUT STATE */}
+            {appState === "input" && (
               <div
-                className="opacity-0"
+                className="flex flex-col gap-4 opacity-0"
                 style={{
-                  animation:
-                    "fadeSlideUp 0.4s var(--ease-out) forwards",
+                  animation: "fadeSlideUp 0.5s var(--ease-out) 0.15s forwards",
                 }}
               >
-                <ScoreDisplay score={resultData.score} />
-              </div>
-
-              {/* Verdict card */}
-              <div
-                className="rounded-2xl border border-white/8 bg-surface p-4 md:p-6 border-l-4 border-l-primary opacity-0"
-                style={{
-                  animation:
-                    "fadeSlideUp 0.4s var(--ease-out) 0.6s forwards",
-                }}
-              >
-                <span
-                  className="font-heading text-xs font-medium uppercase text-text-muted block"
-                  style={{ letterSpacing: "0.1em" }}
-                >
-                  Verdict
-                </span>
-                <VerdictTypewriter
-                  text={resultData.verdict}
-                  delay={600}
+                {errorData && (
+                  <ErrorBoundary error={errorData} onRetry={handleRetry} />
+                )}
+                <p className="font-body text-sm text-text-muted text-center">
+                  Confess. We&apos;ll judge.
+                </p>
+                <InputForm
+                  onSubmit={handleSubmit}
+                  disabled={false}
+                  rateLimitInfo={rateLimitInfo}
                 />
               </div>
+            )}
 
-              {/* Psychological profile */}
-              <div
-                className="opacity-0"
-                style={{
-                  animation:
-                    "fadeSlideUp 0.4s var(--ease-out) 1.4s forwards",
-                }}
-              >
-                <span
-                  className="font-heading text-xs font-medium uppercase text-text-muted block mb-3"
-                  style={{ letterSpacing: "0.1em" }}
-                >
-                  Psychological Profile
-                </span>
-                <p className="font-body text-base text-text-secondary leading-relaxed">
-                  {resultData.profile}
-                </p>
-              </div>
-
-              {/* Comparisons */}
-              <div
-                className="opacity-0"
-                style={{
-                  animation:
-                    "fadeSlideUp 0.4s var(--ease-out) 1.8s forwards",
-                }}
-              >
-                <span
-                  className="font-heading text-xs font-medium uppercase text-text-muted block mb-3"
-                  style={{ letterSpacing: "0.1em" }}
-                >
-                  You Are Compared To
-                </span>
-                <div className="flex flex-col gap-3">
-                  {resultData.comparisons.map((comp, index) => (
-                    <div
-                      key={comp.name}
-                      className="rounded-xl border border-white/8 bg-surface p-3 md:p-4 opacity-0"
-                      style={{
-                        animation: `fadeSlideUp 0.3s var(--ease-out) ${1.9 + index * 0.1}s forwards`,
-                      }}
-                    >
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="font-heading text-base font-medium text-text-primary">
-                          {comp.name}
-                        </span>
-                        <span className="font-heading text-base font-bold text-tertiary">
-                          {comp.percentage}%
-                        </span>
-                      </div>
-                      <div className="h-1 w-full rounded-full bg-elevated overflow-hidden">
-                        <div
-                          className="h-full rounded-full bg-tertiary"
-                          style={
-                            {
-                              "--percentage": `${comp.percentage}%`,
-                              width: "0%",
-                              animation: `barFill 0.6s var(--ease-out) ${2.0 + index * 0.1}s forwards`,
-                            } as React.CSSProperties
-                          }
-                        />
-                      </div>
-                      <p className="mt-2 font-body text-sm text-text-muted italic">
-                        {comp.description}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Recommendation */}
-              <div
-                className="opacity-0"
-                style={{
-                  animation:
-                    "fadeSlideUp 0.3s var(--ease-out) 2.4s forwards",
-                }}
-              >
-                <span
-                  className="font-heading text-xs font-medium uppercase text-text-muted block mb-3"
-                  style={{ letterSpacing: "0.1em" }}
-                >
-                  Recommendation
-                </span>
+            {/* RESULT STATE */}
+            {appState === "result" && resultData && (
+              <div className="flex flex-col gap-6">
+                {/* Your confession — instant */}
                 <div
-                  className="rounded-2xl border-l-4 bg-surface p-4 md:p-6"
+                  className="opacity-0"
                   style={{
-                    borderLeftStyle: "dashed",
-                    borderLeftColor: "var(--color-warning)",
+                    animation: "fadeSlideUp 0.3s var(--ease-out) forwards",
                   }}
                 >
-                  <p className="font-body text-base text-text-secondary leading-relaxed">
-                    {resultData.recommendation}
-                  </p>
+                  <div className="glass rounded-2xl p-4 border-l-4 border-l-white/20">
+                    <p className="font-body text-xs text-text-muted uppercase tracking-wider mb-1">
+                      Your confession
+                    </p>
+                    <p className="font-body text-sm text-text-secondary leading-relaxed">
+                      &ldquo;{userInput}&rdquo;
+                    </p>
+                  </div>
                 </div>
-              </div>
 
-              {/* Action buttons */}
-              <div
-                className="opacity-0"
-                style={{
-                  animation:
-                    "fadeSlideUp 0.3s var(--ease-out) 2.8s forwards",
-                }}
-              >
-                <div className="flex flex-col gap-2">
+                {/* Score — instant */}
+                <div
+                  className="opacity-0"
+                  style={{
+                    animation: "fadeSlideUp 0.3s var(--ease-out) forwards",
+                  }}
+                >
+                  <ScoreDisplay score={resultData.score} />
+                </div>
+
+                {/* Verdict — 200ms */}
+                <div
+                  className="opacity-0"
+                  style={{
+                    animation:
+                      "fadeSlideUp 0.3s var(--ease-out) 0.2s forwards",
+                  }}
+                >
+                  <h2 className="font-heading text-lg font-bold text-text-primary mb-3">
+                    The Verdict Is In 🔨
+                  </h2>
+                  <div className="glass-strong rounded-2xl p-5 border-l-4 border-l-primary">
+                    <p className="font-heading text-xl font-bold text-text-primary leading-snug">
+                      &ldquo;{resultData.verdict}&rdquo;
+                    </p>
+                  </div>
+                </div>
+
+                {/* Psychological profile — 350ms */}
+                <div
+                  className="opacity-0"
+                  style={{
+                    animation:
+                      "fadeSlideUp 0.3s var(--ease-out) 0.35s forwards",
+                  }}
+                >
+                  <h2 className="font-heading text-lg font-bold text-text-primary mb-3">
+                    Your Brain, Explained 🧠
+                  </h2>
+                  <div className="glass rounded-2xl p-5">
+                    <p className="font-body text-sm text-text-secondary leading-relaxed">
+                      {resultData.profile}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Comparisons — 450ms + 80ms intervals */}
+                <div
+                  className="opacity-0"
+                  style={{
+                    animation:
+                      "fadeSlideUp 0.3s var(--ease-out) 0.45s forwards",
+                  }}
+                >
+                  <h2 className="font-heading text-lg font-bold text-text-primary mb-3">
+                    You Give Off... 👀
+                  </h2>
+                  <div className="flex flex-col gap-2.5">
+                    {resultData.comparisons.map((comp, index) => {
+                      const cardEmoji = ["🎭", "📺", "🃏"][index] ?? "✨";
+                      return (
+                        <div
+                          key={comp.name}
+                          className="glass rounded-2xl p-4 opacity-0"
+                          style={{
+                            animation: `fadeSlideUp 0.3s var(--ease-out) ${0.5 + index * 0.08}s forwards`,
+                          }}
+                        >
+                          {/* Top: emoji + name + percentage */}
+                          <div className="flex items-center gap-2.5">
+                            <span className="text-xl shrink-0">{cardEmoji}</span>
+                            <h3 className="font-heading text-sm font-bold text-text-primary leading-snug flex-1 min-w-0">
+                              {comp.name}
+                            </h3>
+                            <span className="font-heading text-lg font-bold text-tertiary tabular-nums shrink-0">
+                              {comp.percentage}%
+                            </span>
+                          </div>
+                          {/* Description */}
+                          <p className="font-body text-xs text-text-muted mt-1.5 leading-relaxed pl-8">
+                            {comp.description}
+                          </p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Recommendation — 650ms */}
+                <div
+                  className="opacity-0"
+                  style={{
+                    animation:
+                      "fadeSlideUp 0.3s var(--ease-out) 0.65s forwards",
+                  }}
+                >
+                  <h2 className="font-heading text-lg font-bold text-text-primary mb-3">
+                    Professional Advice 💊
+                  </h2>
+                  <div className="glass rounded-2xl p-5 border-l-4 border-l-secondary">
+                    <p className="font-body text-sm text-text-secondary leading-relaxed">
+                      {resultData.recommendation}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Action buttons — 750ms */}
+                <div
+                  className="flex flex-col gap-3 opacity-0"
+                  style={{
+                    animation:
+                      "fadeSlideUp 0.3s var(--ease-out) 0.75s forwards",
+                  }}
+                >
                   <ShareButton
                     resultData={resultData}
                     cardRef={cardRef}
                   />
+
+                  {/* Try Again */}
                   <button
                     type="button"
                     onClick={handleTryAgain}
-                    className="w-full min-h-[48px] lg:min-h-[52px] rounded-xl border border-white/15 bg-transparent font-heading text-base font-bold uppercase tracking-[0.1em] text-text-primary transition-all duration-150 ease-out hover:bg-white/5 hover:border-white/30 active:scale-[0.97] active:duration-[50ms]"
+                    className="w-full min-h-[48px] rounded-2xl border border-white/15 bg-transparent font-heading text-base font-bold uppercase tracking-wide text-text-primary transition-all duration-150 ease-out hover:bg-white/5 hover:border-white/30 active:scale-[0.97] active:duration-[50ms]"
                     style={{ padding: "14px 28px" }}
                   >
-                    try again
+                    CONFESS AGAIN
                   </button>
                 </div>
+
+                {/* Hidden ResultCard for image generation */}
+                <ResultCard ref={cardRef} data={resultData} userInput={userInput} />
               </div>
-
-              {/* Hidden ResultCard for image generation */}
-              <ResultCard ref={cardRef} data={resultData} />
-            </div>
-          )}
+            )}
+          </div>
         </div>
-
-        {/* Footer -- always visible */}
-        <Footer />
-      </div>
-    </main>
-  );
-}
-
-/* ==========================================
-   VERDICT TYPEWRITER SUB-COMPONENT
-   ========================================== */
-
-function VerdictTypewriter({
-  text,
-  delay,
-}: {
-  text: string;
-  delay: number;
-}) {
-  const [displayText, setDisplayText] = useState("");
-  const [isComplete, setIsComplete] = useState(false);
-
-  useEffect(() => {
-    const prefersReducedMotion = window.matchMedia(
-      "(prefers-reduced-motion: reduce)"
-    ).matches;
-
-    if (prefersReducedMotion) {
-      setDisplayText(text);
-      setIsComplete(true);
-      return;
-    }
-
-    let intervalId: ReturnType<typeof setInterval> | undefined;
-
-    const timeout = setTimeout(() => {
-      let i = 0;
-      intervalId = setInterval(() => {
-        i++;
-        setDisplayText(text.slice(0, i));
-        if (i >= text.length) {
-          if (intervalId !== undefined) clearInterval(intervalId);
-          setIsComplete(true);
-        }
-      }, 30);
-    }, delay);
-
-    return () => {
-      clearTimeout(timeout);
-      if (intervalId !== undefined) clearInterval(intervalId);
-    };
-  }, [text, delay]);
-
-  return (
-    <p className="mt-2 font-heading text-lg font-bold text-text-primary leading-snug">
-      {displayText || "\u00A0"}
-      {!isComplete && (
-        <span className="inline-block w-[2px] h-[1.1em] bg-primary align-middle ml-0.5 animate-[blink_0.6s_step-end_infinite]" />
-      )}
-    </p>
+      </main>
+    </>
   );
 }
