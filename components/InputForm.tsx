@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useEffect } from "react";
 import type { RateLimitInfo } from "@/lib/types";
 
 const MAX_CHARS = 500;
@@ -84,7 +84,10 @@ export default function InputForm({
   const [validationError, setValidationError] = useState("");
   const [shakeError, setShakeError] = useState(false);
 
-  const pills = useMemo(() => shuffleAndPick(ALL_SUGGESTIONS, 4), []);
+  const [pills, setPills] = useState<string[]>(() => ALL_SUGGESTIONS.slice(0, 4));
+  useEffect(() => {
+    setPills(shuffleAndPick(ALL_SUGGESTIONS, 4));
+  }, []);
 
   const charCount = text.length;
   const isOverWarn = charCount >= WARN_CHARS;
